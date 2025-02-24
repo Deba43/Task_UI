@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .task-card {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .task-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            border-radius: 8px 8px 0 0;
+        }
+        .task-body {
+            padding: 15px;
+        }
+        .task-footer {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-top: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+        }
+        .badge {
+            font-size: 0.9em;
+            padding: 5px 10px;
+        }
+        .priority-high {
+            background-color: #dc3545;
+            color: white;
+        }
+        .priority-medium {
+            background-color: #ffc107;
+            color: black;
+        }
+        .priority-low {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Volunteer Tasks</h1>
+        <div class="row">
+            <!-- Loop through tasks -->
+            <div th:each="task : ${tasks}" class="col-md-6">
+                <div class="task-card">
+                    <div class="task-header">
+                        <h5 th:text="${task.title}" class="card-title"></h5>
+                        <h6 th:text="${task.organization}" class="card-subtitle mb-2 text-muted"></h6>
+                    </div>
+                    <div class="task-body">
+                        <p th:text="${task.description}" class="card-text"></p>
+                        <ul class="list-unstyled">
+                            <li><strong>Status:</strong> <span th:text="${task.status}" class="badge bg-secondary"></span></li>
+                            <li><strong>Priority:</strong>
+                                <span th:if="${task.priority == 'High'}" class="badge priority-high">High</span>
+                                <span th:if="${task.priority == 'Medium'}" class="badge priority-medium">Medium</span>
+                                <span th:if="${task.priority == 'Low'}" class="badge priority-low">Low</span>
+                            </li>
+                            <li><strong>Event Date:</strong> <span th:text="${#temporals.format(task.eventDate, 'dd MMM yyyy')}"></span></li>
+                            <li><strong>End Date:</strong> <span th:text="${#temporals.format(task.endDate, 'dd MMM yyyy')}"></span></li>
+                            <li><strong>End At:</strong> <span th:text="${task.endAt}"></span></li>
+                            <li><strong>Updated At:</strong> <span th:text="${#temporals.format(task.updatedAt, 'dd MMM yyyy HH:mm')}"></span></li>
+                            <li><strong>Category:</strong> <span th:text="${task.category}" class="badge bg-info"></span></li>
+                            <li><strong>Location:</strong> <span th:text="${task.location}"></span></li>
+                        </ul>
+                    </div>
+                    <div class="task-footer">
+                        <a href="#" class="btn btn-primary">Sign Up</a>
+                        <a href="#" class="btn btn-outline-secondary">Save Task</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
