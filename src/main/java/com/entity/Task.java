@@ -14,7 +14,5 @@ public class Task {
     private String category;
 
     private LocalDate eventDate;
-    private LocalDate createdAt;
-    private LocalDate endAt;
-    private LocalDate updatedAt; 
+    private LocalDate endDate; 
 }

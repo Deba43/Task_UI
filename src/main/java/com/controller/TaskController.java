@@ -30,7 +30,7 @@ public class TaskController {
         return "addTask";
     }
 
-    @PostMapping("/addTask")
+    @PostMapping("addTask")
     public String createTasks(@ModelAttribute Task task, Model model) {
         ResponseEntity<Task> response = restTemplate.postForEntity(
                 BASE_URL + "/addTask", task, Task.class); 
@@ -41,7 +41,7 @@ public class TaskController {
 
     
 
-    @GetMapping("/viewTasks")
+    @GetMapping("/viewAllTasks")
     public String displayTasks() {
         return "viewTasks"; 
     }

@@ -60,7 +60,7 @@
                 <div class="task-card">
                     <div class="task-header">
                         <h5 th:text="${task.title}" class="card-title"></h5>
-                        <h6 th:text="${task.organization}" class="card-subtitle mb-2 text-muted"></h6>
+            
                     </div>
                     <div class="task-body">
                         <p th:text="${task.description}" class="card-text"></p>
@@ -73,8 +73,7 @@
                             </li>
                             <li><strong>Event Date:</strong> <span th:text="${#temporals.format(task.eventDate, 'dd MMM yyyy')}"></span></li>
                             <li><strong>End Date:</strong> <span th:text="${#temporals.format(task.endDate, 'dd MMM yyyy')}"></span></li>
-                            <li><strong>End At:</strong> <span th:text="${task.endAt}"></span></li>
-                            <li><strong>Updated At:</strong> <span th:text="${#temporals.format(task.updatedAt, 'dd MMM yyyy HH:mm')}"></span></li>
+        
                             <li><strong>Category:</strong> <span th:text="${task.category}" class="badge bg-info"></span></li>
                             <li><strong>Location:</strong> <span th:text="${task.location}"></span></li>
                         </ul>
