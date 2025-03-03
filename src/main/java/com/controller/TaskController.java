@@ -60,6 +60,79 @@ public class TaskController {
         return "viewTasks";
     }
 
+    @GetMapping("/getTaskByName/{title}")
+    public String taskByName(@ModelAttribute Task task, Model model) { 
+
+        String url = BASE_URL + "/getTaskByName/{title}";
+
+        ResponseEntity<List<Task>> response = restTemplate.exchange(
+                url,
+                org.springframework.http.HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Task>>() {
+                });
+        List<Task> tasks = response.getBody();
+
+        model.addAttribute("tasks", tasks);
+
+        return "taskByName";
+    }
+
+    @GetMapping("/getTaskByLocation/{location}")
+    public String taskByLocation(@ModelAttribute Task task, Model model) { 
+
+        String url = BASE_URL + "/getTaskByName/{location}";
+
+        ResponseEntity<List<Task>> response = restTemplate.exchange(
+                url,
+                org.springframework.http.HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Task>>() {
+                });
+        List<Task> tasks = response.getBody();
+
+        model.addAttribute("tasks", tasks);
+
+        return "taskByLocation";
+    }
+
+    @GetMapping("/getTaskByCategory/{category}")
+    public String taskByCategory(@ModelAttribute Task task, Model model) { 
+
+        String url = BASE_URL + "/getTaskByCategory/{category}";
+
+        ResponseEntity<List<Task>> response = restTemplate.exchange(
+                url,
+                org.springframework.http.HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Task>>() {
+                });
+        List<Task> tasks = response.getBody();
+
+        model.addAttribute("tasks", tasks);
+
+        return "taskByCategory";
+    }
+
+    @GetMapping("/getTaskByDate/{eventDate}")
+    public String taskByEventdate(@ModelAttribute Task task, Model model) { 
+
+        String url = BASE_URL + "/getTaskByDate/{eventDate}";
+
+        ResponseEntity<List<Task>> response = restTemplate.exchange(
+                url,
+                org.springframework.http.HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Task>>() {
+                });
+        List<Task> tasks = response.getBody();
+
+        model.addAttribute("tasks", tasks);
+
+        return "taskByDate";
+    }
+
+
     @GetMapping("/searchTasks")
     public String searchTasks(@ModelAttribute Task task, Model model) { // SearchAllTasks
 
