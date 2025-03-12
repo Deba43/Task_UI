@@ -240,6 +240,7 @@
           th:object="${task}"
           method="post"
         >
+        <input type="hidden" name="orgId" th:value="${org_id}" />
           <div class="form-row">
             <div class="form-group">
               <label for="title"><i class="fas fa-heading"></i> Title</label>
@@ -250,6 +251,7 @@
                 id="title"
                 placeholder="Enter task title"
               />
+              <div th:if="${#fields.hasErrors('title')}" th:text="${#fields.errors('title')[0]}" class="text-danger mt-1"></div>
             </div>
 
             <div class="form-group">
@@ -263,6 +265,7 @@
                 id="description"
                 placeholder="What needs to be done?"
               />
+              <div th:if="${#fields.hasErrors('description')}" th:text="${#fields.errors('description')[0]}" class="text-danger mt-1"></div>
             </div>
           </div>
 
@@ -276,6 +279,7 @@
                 readonly
                 class="inputField"
               />
+              <div th:if="${#fields.hasErrors('status')}" th:text="${#fields.errors('status')[0]}" class="text-danger mt-1"></div>
             </div>
 
             <div class="form-group">
@@ -286,6 +290,7 @@
                 <option value="MEDIUM">MEDIUM</option>
                 <option value="HIGH">HIGH</option>
               </select>
+              <div th:if="${#fields.hasErrors('priority')}" th:text="${#fields.errors('priority')[0]}" class="text-danger mt-1"></div>
             </div>
           </div>
 
@@ -300,6 +305,7 @@
                 class="inputField"
                 id="eventDate"
               />
+              <div th:if="${#fields.hasErrors('eventDate')}" th:text="${#fields.errors('eventDate')[0]}" class="text-danger mt-1"></div>
             </div>
 
             <div class="form-group">
@@ -312,6 +318,7 @@
                 class="inputField"
                 id="endDate"
               />
+              <div th:if="${#fields.hasErrors('endDate')}" th:text="${#fields.errors('endDate')[0]}" class="text-danger mt-1"></div>
             </div>
           </div>
 
@@ -326,6 +333,7 @@
                 <option value="HEALTH">HEALTH</option>
                 <option value="ENVIRONMENT">ENVIRONMENT</option>
               </select>
+              <div th:if="${#fields.hasErrors('category')}" th:text="${#fields.errors('category')[0]}" class="text-danger mt-1"></div>
             </div>
 
             <div class="form-group">
@@ -339,6 +347,7 @@
                 id="location"
                 placeholder="Where will this take place?"
               />
+              <div th:if="${#fields.hasErrors('location')}" th:text="${#fields.errors('location')[0]}" class="text-danger mt-1"></div>
             </div>
           </div>
 

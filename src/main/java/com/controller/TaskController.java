@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.entity.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,25 +39,30 @@ public class TaskController {
 
     @GetMapping("/")
     public String home() {
-        return "home"; 
+        return "home";
     }
 
     @GetMapping("/createTasks")
-    public String createTask(Model model) {
+    public String createTask(@RequestParam Long org_id, Model model) {
         model.addAttribute("task", new Task());
+        model.addAttribute("org_id", org_id);
         return "addTask";
     }
 
     @PostMapping("/addTask")
-    public String createTasks(@ModelAttribute Task task, Model model) {
+    public String createTasks(@ModelAttribute Task task, @RequestParam Long org_id, Model model) {
         try {
+
             ResponseEntity<Task> response = restTemplate.postForEntity(
-                    BASE_URL + "/addTask", task, Task.class); 
+                    BASE_URL + "/Organization/{org_id}/addTask",
+                    task,
+                    Task.class,
+                    org_id);
             model.addAttribute("message", "Task added successfully: " + response.getBody().getTitle());
         } catch (HttpClientErrorException e) {
             handleException(e, model);
         }
-        return "addTask"; 
+        return "addTask";
     }
 
     @GetMapping("/viewAllTasks")
@@ -67,19 +73,19 @@ public class TaskController {
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<Task>>() {}
-            );
+                    new ParameterizedTypeReference<List<Task>>() {
+                    });
             List<Task> tasks = response.getBody();
             model.addAttribute("tasks", tasks);
         } catch (HttpClientErrorException e) {
             handleException(e, model);
         }
-        return "viewTasks"; 
+        return "viewTasks";
     }
 
     @GetMapping("/getTaskByLocationPage")
     public String getTaskBylocationPage() {
-        return "getTaskByLocation"; 
+        return "getTaskByLocation";
     }
 
     @GetMapping("/getTaskByLocation/{location}")
@@ -96,12 +102,12 @@ public class TaskController {
         } catch (HttpClientErrorException e) {
             handleException(e, model);
         }
-        return "getTaskByLocation"; 
+        return "getTaskByLocation";
     }
 
     @GetMapping("/getTaskByCategoryPage")
     public String getTaskBycategoryPage() {
-        return "getTaskByCategory"; 
+        return "getTaskByCategory";
     }
 
     @GetMapping("/getTaskByCategory/{category}")
@@ -118,18 +124,18 @@ public class TaskController {
         } catch (HttpClientErrorException e) {
             handleException(e, model);
         }
-        return "getTaskByCategory"; 
+        return "getTaskByCategory";
     }
 
     @GetMapping("/getTaskByTitlePage")
     public String getTaskBytitlePage() {
-        return "getTaskByTitle"; 
+        return "getTaskByTitle";
     }
 
     @GetMapping("/getTaskByTitle/{title}")
     public String searchByTitle(@PathVariable String title, Model model) {
         try {
-            String apiUrl = BASE_URL + "/getTaskByName/" + title;   
+            String apiUrl = BASE_URL + "/getTaskByName/" + title;
             ResponseEntity<Task[]> response = restTemplate.getForEntity(apiUrl, Task[].class);
             if (response.getStatusCode() == HttpStatus.OK) {
                 List<Task> tasks = Arrays.asList(response.getBody());
@@ -140,12 +146,12 @@ public class TaskController {
         } catch (HttpClientErrorException e) {
             handleException(e, model);
         }
-        return "getTaskByTitle"; 
+        return "getTaskByTitle";
     }
 
     @GetMapping("/getTaskByDatePage")
     public String getTaskBydate() {
-        return "getTaskByDate"; 
+        return "getTaskByDate";
     }
 
     @GetMapping("/getTaskByDate/{date}")
@@ -162,13 +168,13 @@ public class TaskController {
         } catch (HttpClientErrorException e) {
             handleException(e, model);
         }
-        return "getTaskByDate"; 
+        return "getTaskByDate";
     }
 
     @GetMapping("/editTask/{id}")
     public String getupdateTaskPage(Model model, @PathVariable Long id) {
         try {
-            String apiUrl = BASE_URL + "/getTaskById/" + id;   
+            String apiUrl = BASE_URL + "/getTaskById/" + id;
             ResponseEntity<Task> response = restTemplate.getForEntity(apiUrl, Task.class);
             if (response.getStatusCode() == HttpStatus.OK) {
                 model.addAttribute("task", response.getBody());
@@ -178,7 +184,7 @@ public class TaskController {
         } catch (HttpClientErrorException e) {
             handleException(e, model);
         }
-        return "updateTasks"; 
+        return "updateTasks";
     }
 
     @PutMapping("/updateTask/{id}")
@@ -188,11 +194,10 @@ public class TaskController {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Task> requestEntity = new HttpEntity<>(task, headers);
             ResponseEntity<Task> response = restTemplate.exchange(
-                BASE_URL + "/update/" + id,
-                HttpMethod.PUT,
-                requestEntity,
-                Task.class
-            );
+                    BASE_URL + "/update/" + id,
+                    HttpMethod.PUT,
+                    requestEntity,
+                    Task.class);
             if (response.getStatusCode() == HttpStatus.OK) {
                 model.addAttribute("updatedtask", "Task Updated Successfully");
             } else {
@@ -207,10 +212,10 @@ public class TaskController {
     private void handleException(HttpClientErrorException e, Model model) {
         try {
             Map<String, String> errors = new ObjectMapper().readValue(
-                e.getResponseBodyAsString(), new TypeReference<Map<String, String>>() {}
-            );
+                    e.getResponseBodyAsString(), new TypeReference<Map<String, String>>() {
+                    });
             model.addAttribute("errorMessage", errors.get("message"));
-        } catch ( JsonProcessingException ex) {
+        } catch (JsonProcessingException ex) {
             model.addAttribute("errorMessage", "An error occurred while processing the request.");
         }
     }
