@@ -1,5 +1,6 @@
 package com.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -43,26 +45,57 @@ public class TaskController {
     }
 
     @GetMapping("/createTasks")
-    public String createTask(@RequestParam Long org_id, Model model) {
+    public String createTask(Model model) {
         model.addAttribute("task", new Task());
-        model.addAttribute("org_id", org_id);
+
+        try {
+            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
+                    BASE_URL + "/organizations",
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                    });
+            List<Map<String, Object>> organizations = response.getBody();
+            model.addAttribute("organizations", organizations);
+        } catch (HttpClientErrorException e) {
+            model.addAttribute("errorMessage", "Error fetching organizations.");
+        }
+
         return "addTask";
     }
 
     @PostMapping("/addTask")
-    public String createTasks(@ModelAttribute Task task, @RequestParam Long org_id, Model model) {
+    public String addTask(@ModelAttribute Task task, @RequestParam("orgId") Long orgId, Model model) {
+        System.out.println("Received orgId: " + orgId);
+
+        if (orgId == null) {
+            model.addAttribute("message", "Organization ID is required!");
+            return "createTask";
+        }
+
         try {
 
-            ResponseEntity<Task> response = restTemplate.postForEntity(
-                    BASE_URL + "/Organization/{org_id}/addTask",
-                    task,
-                    Task.class,
-                    org_id);
-            model.addAttribute("message", "Task added successfully: " + response.getBody().getTitle());
-        } catch (HttpClientErrorException e) {
-            handleException(e, model);
+            String apiUrl = BASE_URL + "/Organization/" + orgId + "/addTask";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Task> requestEntity = new HttpEntity<>(task, headers);
+
+            ResponseEntity<Task> response = restTemplate.postForEntity(apiUrl, requestEntity, Task.class);
+
+            if (response.getStatusCode() == HttpStatus.CREATED) {
+                model.addAttribute("message", "Task created successfully!");
+                return "redirect:/viewAllTasks";
+            } else {
+                model.addAttribute("message", "Failed to create task.");
+                return "createTask";
+            }
+
+        } catch (Exception e) {
+            model.addAttribute("message", "Error occurred while creating task.");
+            return "createTask";
         }
-        return "addTask";
     }
 
     @GetMapping("/viewAllTasks")
@@ -93,14 +126,16 @@ public class TaskController {
         try {
             String apiUrl = BASE_URL + "/getTaskByLocation/" + location;
             ResponseEntity<Task[]> response = restTemplate.getForEntity(apiUrl, Task[].class);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                List<Task> tasks = Arrays.asList(response.getBody());
-                model.addAttribute("tasks", tasks);
-            } else {
-                model.addAttribute("tasks", new ArrayList<>());
+            List<Task> tasks = (response.getBody() != null) ? Arrays.asList(response.getBody()) : new ArrayList<>();
+
+            if (tasks.isEmpty()) {
+                model.addAttribute("errorMessage", "No tasks available at this location.");
+                return "errorPage";
             }
+            model.addAttribute("tasks", tasks);
         } catch (HttpClientErrorException e) {
-            handleException(e, model);
+            model.addAttribute("errorMessage", "Error fetching tasks for this location.");
+            return "errorPage";
         }
         return "getTaskByLocation";
     }
@@ -115,20 +150,23 @@ public class TaskController {
         try {
             String apiUrl = BASE_URL + "/getTaskByCategory/" + category;
             ResponseEntity<Task[]> response = restTemplate.getForEntity(apiUrl, Task[].class);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                List<Task> tasks = Arrays.asList(response.getBody());
-                model.addAttribute("tasks", tasks);
+            List<Task> tasks = (response.getBody() != null) ? Arrays.asList(response.getBody()) : new ArrayList<>();
+
+            if (tasks.isEmpty()) {
+                model.addAttribute("message", "No tasks found in this category.");
+                return "errorPage";
             } else {
-                model.addAttribute("tasks", new ArrayList<>());
+                model.addAttribute("tasks", tasks);
             }
         } catch (HttpClientErrorException e) {
-            handleException(e, model);
+            model.addAttribute("message", "Error fetching tasks for this category.");
+            return "errorPage";
         }
         return "getTaskByCategory";
     }
 
     @GetMapping("/getTaskByTitlePage")
-    public String getTaskBytitlePage() {
+    public String getTaskByTitlePage() {
         return "getTaskByTitle";
     }
 
@@ -137,14 +175,17 @@ public class TaskController {
         try {
             String apiUrl = BASE_URL + "/getTaskByName/" + title;
             ResponseEntity<Task[]> response = restTemplate.getForEntity(apiUrl, Task[].class);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                List<Task> tasks = Arrays.asList(response.getBody());
-                model.addAttribute("tasks", tasks);
-            } else {
-                model.addAttribute("tasks", new ArrayList<>());
+            List<Task> tasks = (response.getBody() != null) ? Arrays.asList(response.getBody()) : new ArrayList<>();
+
+            if (tasks.isEmpty()) {
+                model.addAttribute("message", "No tasks found with this title.");
+                return "errorPage";
             }
+
+            model.addAttribute("tasks", tasks);
         } catch (HttpClientErrorException e) {
-            handleException(e, model);
+            model.addAttribute("message", "An error occurred while fetching tasks.");
+            return "errorPage";
         }
         return "getTaskByTitle";
     }
@@ -159,16 +200,63 @@ public class TaskController {
         try {
             String apiUrl = BASE_URL + "/getTaskByDate/" + date;
             ResponseEntity<Task[]> response = restTemplate.getForEntity(apiUrl, Task[].class);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                List<Task> tasks = Arrays.asList(response.getBody());
-                model.addAttribute("tasks", tasks);
+            List<Task> tasks = (response.getBody() != null) ? Arrays.asList(response.getBody()) : new ArrayList<>();
+
+            if (tasks.isEmpty()) {
+                model.addAttribute("message", "No tasks available for this date.");
+                return "errorPage";
             } else {
-                model.addAttribute("tasks", new ArrayList<>());
+                model.addAttribute("tasks", tasks);
             }
         } catch (HttpClientErrorException e) {
-            handleException(e, model);
+            model.addAttribute("message", "Error fetching tasks for this date.");
+            return "errorPage";
         }
         return "getTaskByDate";
+    }
+
+    @GetMapping("/searchTasks")
+    public String searchTasks(Model model) {
+
+        return "searchTasks"; // Make sure there is a "searchTasks.html" in templates
+    }
+
+    // @GetMapping("/searchTasksPage")
+    // public String searchTasksPage() {
+    // return "searchTasks"; // Loads the search form
+    // }
+
+    @PostMapping("/searchTasks")
+    public String searchTasks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate eventDate,
+            Model model) {
+
+        String apiUrl = BASE_URL + "/searchTasks?" +
+                (title != null ? "title=" + title + "&" : "") +
+                (location != null ? "location=" + location + "&" : "") +
+                (category != null ? "category=" + category + "&" : "") +
+                (eventDate != null ? "eventDate=" + eventDate + "&" : "");
+
+        try {
+
+            ResponseEntity<Task[]> response = restTemplate.getForEntity(apiUrl, Task[].class);
+            List<Task> tasks = (response.getBody() != null) ? Arrays.asList(response.getBody()) : new ArrayList<>();
+
+            if (tasks.isEmpty()) {
+                model.addAttribute("message", "No tasks found.");
+                return "searchTasks";
+            }
+
+            model.addAttribute("tasks", tasks);
+        } catch (HttpClientErrorException e) {
+            model.addAttribute("message", "Error fetching tasks.");
+            return "searchTasks";
+        }
+
+        return "searchTasks";
     }
 
     @GetMapping("/editTask/{id}")
